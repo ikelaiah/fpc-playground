@@ -8,10 +8,13 @@ It receives Pascal source code via HTTP POST requests and returns the execution 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from fpc_runner import compile_and_run
+import os
 
 # Server configuration
 HOST = '0.0.0.0'  # Listen on all network interfaces (allows external connections)
-PORT = 5000       # Standard Flask development port
+
+# Get backend port from environment variable or default to 5000
+backend_port = os.getenv('BACKEND_PORT', '5000')
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -89,4 +92,4 @@ if __name__ == '__main__':
     # - host='0.0.0.0': Accept connections from any IP address
     # - port=5000: Listen on port 5000
     # - debug=False: Disable debug mode for production-like behavior
-    app.run(host=HOST, port=PORT, debug=False)
+    app.run(host=HOST, port=int(backend_port), debug=False)

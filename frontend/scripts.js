@@ -140,6 +140,11 @@ function initializePlayground() {
         }
     }
 
+    // Update backend URL dynamically based on environment
+    const backendUrl = window.location.hostname.includes('your-digitalocean-app-domain.com')
+      ? 'https://your-digitalocean-app-domain.com'
+      : 'http://localhost:5000';
+
     async function runCode() {
         const code = editor.getValue().trim();
         
@@ -179,7 +184,7 @@ function initializePlayground() {
             const payload = { code: code };
             
             // Send code to backend
-            const response = await fetch('http://localhost:5000/run', {
+            const response = await fetch(backendUrl + '/run', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -214,7 +219,7 @@ function initializePlayground() {
             }
 
         } catch (error) {
-            output.textContent = `❌ Connection Error: ${error.message}\n\n💡 Make sure the backend server is running:\n   cd backend\n   docker run -p 5000:5000 fpc-playground-backend`;
+            output.textContent = `❌ Connection Error: ${error.message}\n\n💡 Make sure the backend server is running.`;
         } finally {
             // Reset button state
             runBtn.disabled = false;
