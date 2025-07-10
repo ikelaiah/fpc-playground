@@ -142,7 +142,7 @@ function initializePlayground() {
 
     // Update backend URL dynamically based on environment
     const backendUrl = window.location.hostname.includes('fpc-playground-app-mgeib.ondigitalocean.app')
-      ? 'https://fpc-playground-app-mgeib.ondigitalocean.app'
+      ? 'https://fpc-playground-app-mgeib.ondigitalocean.app:5000'
       : 'http://localhost:5000';
 
     console.log('Using backend URL:', backendUrl);
