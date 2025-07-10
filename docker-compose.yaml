@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    container_name: fpc-playground-backend
+    ports:
+      - "5000:5000"
+  frontend:
+    image: nginx:latest
+    container_name: fpc-playground-frontend
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    ports:
+      - "8080:80"
+      

@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FPC Playground</title>
+
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+
+    <style type="text/css" media="screen">
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .code-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        button {
+            padding: 0.25em;
+            min-width: 15ch;
+        }
+
+        button.primary {
+            font-size: 15px;
+        }
+
+        button.secondary {
+            font-size: 15px;
+        }
+
+        button.contrast {
+            font-size: 15px;
+        }
+
+        .actions {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .output-panel {
+            flex: 1;
+        }
+
+
+        #editor {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            min-height: 30ch;
+            font-size: 16px;
+            resize: vertical;
+            /* Make editor vertically resizable */
+            border: 1px solid var(--pico-border-color);
+            border-radius: var(--pico-border-radius);
+        }
+
+        .example-panel {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .example-panel p {
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .output-box {
+            background: #f2f2f2;
+            border: 1px solid var(--pico-border-color);
+            border-radius: var(--pico-border-radius);
+            padding: 1rem;
+            min-height: 20ch;
+            font-family: 'Courier New', Monaco, monospace;
+            font-size: 16px;
+            overflow-x: auto;
+            white-space: pre;
+            resize: vertical;
+            /* Make output panel resizable too */
+        }
+    </style>
+
+</head>
+
+<body>
+    <main class="container">
+        <header>
+            <h1>🚀 Free Pascal Playground</h1>
+            <p>Compile and run Free Pascal code in your browser</p>
+        </header>
+
+        <!-- Code Editor Panel -->
+        <div class="code-panel">
+
+            <p><strong>Code Editor</strong></p>
+
+            <div class="actions">
+                <button id="run-btn" class="primary">
+                    ▶ Run Code
+                </button>
+                <button id="clear-btn" class="secondary">
+                    ✕ Clear
+                </button>
+                <button id="fix-quotes-btn" class="secondary">
+                    🔧 Fix Quotes
+                </button>
+            </div>
+
+            <!-- Ace editor -->
+            <div id="editor"></div>
+
+            <div class="example-panel">
+                <p>Load an example:</p>
+                <div class="actions">
+                    <button id="example-0" class="outline primary example-code" data-example="0">Hello World</button>
+                    <button id="example-1" class="outline primary example-code" data-example="1">Variables</button>
+                    <button id="example-2" class="outline primary example-code" data-example="2">Loops</button>
+                    <button id="example-3" class="outline primary example-code" data-example="3">String Handling</button>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <!-- Output Panel -->
+        <div class="output-panel">
+            <p><strong>Output</strong></p>
+            <div id="output" class="output-box">Ready to run your Pascal code...</div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.43.1/ace.js"
+        integrity="sha512-kmA5vhcxOkZI0ReiKJMGNb8/KKbgbExIlnt6aXuPtl86AgHBEi6OHHOz2wsTazBDGZKxe7fmiE+pIuZJQks4+A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/pascal");
+
+        // Set initial code
+        editor.setValue(`program HelloWorld;
+
+{$mode objfpc}{$H+}{$J-}
+
+begin
+  writeln('Hello, Free Pascal!');
+  writeln('Welcome to the FPC Playground!');
+end.`);
+
+        // Configure editor settings
+        editor.setOptions({
+            showPrintMargin: false,
+            highlightActiveLine: true,
+            showFoldWidgets: false  // Disable code folding indicators
+        });
+
+        // Note: Basic autocompletion needs additional Ace modules
+        // Removed enableBasicAutocompletion and enableLiveAutocompletion to fix errors
+
+        document.getElementById('editor').style.fontSize = '16px';
+
+        // Make editor resizable and responsive
+        editor.resize();
+
+        // Auto-resize when window resizes
+        window.addEventListener('resize', function () {
+            editor.resize();
+        });
+
+        // Make editor available globally for scripts.js
+        window.aceEditor = editor;
+    </script>
+    <script src="scripts.js"></script>
+</body>
+
+</html>
