@@ -2,6 +2,9 @@
 
 A simple way to run Free Pascal programs in the browser so new developers can learn the language without having to install anything.
 
+> [!WARNING]
+> Not production ready yet. This project is still a work in progress and will not support all Free Pascal features.
+
 ![FPC Playground Screenshot](assets/2025-07-10-1723-screeenshot_00.png)
 
 ## Table of Contents
