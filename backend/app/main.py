@@ -51,28 +51,72 @@ def run_code():
     dangerous_keywords = [
         # System command execution
         'system', 'fpsystem', 'exec', 'execl', 'execv', 'execve', 'execvp',
+        'winexec', 'shellexecute', 'createprocess',
         
         # Process management
         'fork', 'fpfork', 'shell', 'popen', 'fpexecv', 'fpexecve', 'fpexecvp',
+        'waitpid', 'fpwaitpid', 'kill', 'fpkill', 'signal', 'fpsignal',
         
-        # File system operations (potentially dangerous)
+        # File system operations (potentially dangerous - NO local file saving allowed)
         'deletefile', 'removedir', 'rename', 'rmdir', 'unlink', 'fpunlink',
         'mkdir', 'fpmkdir', 'chdir', 'fpchdir', 'chmod', 'fpchmod',
+        'assign', 'rewrite', 'append', 'reset', 'close', 'assignfile',
+        'closefile', 'blockwrite', 'blockread', 'seek', 'filepos', 'filesize',
+        'truncate', 'flush', 'erase', 'findfirst', 'findnext', 'findclose',
+        'getdir', 'setfileattr', 'getfileattr', 'diskfree', 'disksize',
+        'chown', 'fpchown', 'link', 'fplink', 'symlink', 'fpsymlink',
+        'readlink', 'fpreadlink', 'stat', 'fpstat', 'lstat', 'fplstat',
+        'access', 'fpaccess', 'utime', 'fputime',
         
         # Network operations
         'socket', 'bind', 'listen', 'accept', 'connect', 'fpsocket',
+        'fpbind', 'fplisten', 'fpaccept', 'fpconnect', 'send', 'recv',
+        'fpsend', 'fprecv', 'sendto', 'recvfrom', 'fpsendto', 'fprecvfrom',
+        'setsockopt', 'getsockopt', 'fpsetsockopt', 'fpgetsockopt',
+        'shutdown', 'fpshutdown', 'gethostbyname', 'gethostbyaddr',
+        'getservbyname', 'getservbyport', 'inet_addr', 'inet_ntoa',
         
         # Memory/pointer manipulation (advanced, potentially unsafe)
-        'getmem', 'freemem', 'reallocmem', 'ptr', 'addr',
+        'getmem', 'freemem', 'reallocmem', 'ptr', 'addr', 'pointer',
+        'allocmem', 'memsize', 'getmemorymanager', 'setmemorymanager',
+        'move', 'fillchar', 'fillbyte', 'filldword', 'fillqword',
+        'copymemory', 'zeromemory', 'comparemem',
         
         # Dynamic loading
-        'loadlibrary', 'getprocaddress', 'freelibrary',
+        'loadlibrary', 'getprocaddress', 'freelibrary', 'dlopen', 'dlsym',
+        'dlclose', 'dlerror', 'dynlibs',
         
         # Environment manipulation
         'setenv', 'fpsetenv', 'getenv', 'fpgetenv', 'putenv', 'fpputenv',
+        'unsetenv', 'fpunsetenv', 'clearenv', 'fpclearenv',
+        'getenvironmentvariable', 'setenvironmentvariable',
         
-        # Other potentially dangerous operations
-        'asm'
+        # Registry operations (Windows)
+        'registry', 'regcreatekey', 'regsetvalue', 'regdeletekey',
+        'regdeletevalue', 'regqueryvalue', 'regopenkey', 'regclosekey',
+        
+        # Threading and synchronization (can be used for DoS)
+        'beginthread', 'endthread', 'createthread', 'terminatethread',
+        'suspendthread', 'resumethread', 'waitforsingleobject',
+        'waitformultipleobjects', 'createmutex', 'createevent',
+        'createsemaphore', 'criticalsection',
+        
+        # Time-based attacks and delays
+        'sleep', 'delay', 'fpsleep', 'nanosleep', 'fpnanosleep',
+        
+        # Interrupt handling
+        'setintvec', 'getintvec', 'intr',
+        
+        # Direct hardware access
+        'port', 'portb', 'portw', 'portl', 'memw', 'meml', 'mem',
+        'inportb', 'outportb', 'inport', 'outport',
+        
+        # Assembly and low-level operations
+        'asm', 'absolute',
+        
+        # Unit/module inclusion that could be dangerous
+        'dos', 'linux', 'windows', 'unix', 'baseunix', 'unixutil',
+        'winsock', 'sockets', 'netdb', 'process', 'dynlibs'
     ]
     
     if any(keyword in code.lower() for keyword in dangerous_keywords):
