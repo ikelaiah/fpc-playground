@@ -7,21 +7,60 @@ It receives Pascal source code via HTTP POST requests and returns the execution 
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from fpc_runner import compile_and_run
 import os
 
 # Server configuration
 HOST = '0.0.0.0'  # Listen on all network interfaces (allows external connections)
 
+MAX_CODE_SIZE = 16 * 1024    # Max number of characters allowed in pascal code
+MAX_OUTPUT_SIZE = 48 * 1024  # Max number of characters output
+
+
 # Get backend port from environment variable or default to 5000
 backend_port = os.getenv('BACKEND_PORT', '5000')
 
 # Initialize Flask application
 app = Flask(__name__)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["60 per hour", "10 per minute"],
+    storage_uri="memory://",
+)
 
 # Enable CORS for all routes (allows frontend to call backend from different origins)
 CORS(app)
 
+
+@app.route('/health', methods=['GET'])
+def health():
+    """
+    Health endpoint to check if the server is running.
+    
+    Returns a simple JSON response indicating server status.
+    """
+    return jsonify({'status': 'ok'}), 200
+
+@app.errorhandler(500)
+def internal_error(error):
+    """
+    Handle internal server errors (HTTP 500).
+    
+    Returns a JSON response with an error message.
+    """
+    return jsonify({'error': 'Internal server error'}), 500
+
+@app.errorhandler(429)
+def ratelimit_error(error):
+    """
+    Handle rate limit exceeded errors (HTTP 429).
+    
+    Returns a JSON response indicating that the rate limit has been exceeded.
+    """
+    return jsonify({'error': 'Rate limit exceeded'}), 429
 
 @app.route('/run', methods=['POST'])
 def run_code():
@@ -39,13 +78,24 @@ def run_code():
     }
     """
 
+    # Check if the request has JSON content type
+    if not request.is_json:
+        return jsonify({'error': 'Content-Type must be application/json'}), 400
+
+    # Check if the the request body can be parsed as JSON
+    try:
+        code = request.get_json(force=True).get('code', '')
+    except Exception:
+        return jsonify({'error':'Invalid JSON'}), 400
+
     # Extract Pascal source code from the JSON request body
     # Default to empty string if 'code' field is missing
     code = request.json.get('code', '')
 
-    if len(code) > 10000:
+    # Check if the code exceeds the maximum allowed size
+    if len(code) > MAX_CODE_SIZE:
         # Limit the size of the code to prevent usage abuse
-        return jsonify({'error' : 'Code size exceeds limit of 10,000 characters.'}), 400
+        return jsonify({'error' : f'Code size exceeds limit of {MAX_CODE_SIZE:,} characters.'}), 400
 
     # List of dangerous Pascal procedures/functions that could compromise security
     dangerous_keywords = [
@@ -185,11 +235,16 @@ def run_code():
     
     if any(keyword in code.lower() for keyword in dangerous_keywords):
         # Prevent execution of potentially dangerous system calls
-        return jsonify({'error': 'Code contains restricted keywords that could compromise security.'}), 400
+        return jsonify({'error': 'Code contains restricted keywords.'}), 400
 
     # Compile and run the Pascal code using our FPC runner module
     output = compile_and_run(code)
     
+
+    # Limit the output size
+    if len(output) > MAX_OUTPUT_SIZE:
+        output = output[:MAX_OUTPUT_SIZE] + '\n ... (output truncated)'
+
     # Return the result as JSON (either program output or error messages)
     return jsonify({'output': output})
 
