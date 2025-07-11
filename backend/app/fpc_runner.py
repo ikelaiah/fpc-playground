@@ -64,7 +64,7 @@ def compile_and_run(source_code: str):
                 [exe_path],                          # Run the compiled program
                 stdout=subprocess.PIPE,              # Capture program output
                 stderr=subprocess.STDOUT,            # Capture any runtime errors
-                timeout=TIMEOUT_LIMIT                # Prevent infinite loops (TIMEOUT_LIMIT)
+                timeout=TIMEOUT_LIMIT,                # Prevent infinite loops (TIMEOUT_LIMIT)
                 preexec_fn=_limit_resources if os.name != 'win32' else None 
             )
             # Step 5: Return the program's output
