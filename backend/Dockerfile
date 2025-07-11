@@ -8,7 +8,12 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+
+# Create a non-root user
+RUN groupadd -r fpcuser && useradd -r -g fpcuser -m fpcuser
 
 # Set working directory and copy files
 # Note: Copy requirements.txt first for better Docker layer caching
@@ -23,6 +28,9 @@ RUN python3 -m venv /app/venv && \
 
 # Copy app code after installing dependencies (better layer caching)
 COPY app/ ./
+
+# Change ownership of the entire app folder to the non-root user
+RUN chown -R fpcuser:fpcuser /app
 
 # Expose port 5000
 EXPOSE 5000
