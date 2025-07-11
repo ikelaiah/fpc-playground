@@ -193,25 +193,22 @@ function initializePlayground() {
                 },
                 body: JSON.stringify(payload)
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            
             const result = await response.json();
 
-            // Display output or format compiler errors nicely
-            if (result.output) {
+            // Handle both success and error responses
+            if (result.error) {
+                // Security error or other backend errors
+                output.textContent = `❌ ${result.error}`;
+            } else if (result.output) {
                 // Check if it's a compiler error
                 if (result.output.includes('Fatal:') || result.output.includes('Error:')) {
                     // Format compiler errors for better readability
-                    const formattedError = result.output
+                    output.textContent = result.output
                         .replace(/temp_program\.pas\(\d+,\d+\)/g, 'Line $&')
+                        .replace(/temp_program\.pas/g, 'Your code')
                         .replace(/Fatal: /g, '❌ Fatal Error: ')
-                        .replace(/Error: /g, '❌ Error: ')
-                        .replace(/temp_program\.pas/g, 'Your code');
-                    
-                    output.textContent = formattedError;
+                        .replace(/Error: /g, '❌ Error: ');
                 } else {
                     // Regular program output
                     output.textContent = result.output;

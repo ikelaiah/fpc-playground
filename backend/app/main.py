@@ -151,13 +151,6 @@ def run_code():
         'inifiles', 'readini', 'writeini', 'tinifile', 'readstring',
         'writestring', 'readsection', 'writesection', 'erasesection',
         
-        # More memory and pointer operations
-        'new', 'dispose', 'mark', 'release', 'heapsize', 'maxavail',
-        'memavail', 'sizeof', 'typeinfo', 'gettypedata',
-        
-        # Exception handling that could mask security issues
-        'raise', 'try', 'except', 'finally', 'on', 'reraise',
-        
         # RTTI and reflection (can access internals)
         'published', 'rtti', 'typeinfo', 'getpropinfo', 'setpropvalue',
         'getpropvalue', 'ispublishedprop', 'typinfo',
@@ -176,10 +169,6 @@ def run_code():
         'gethostname', 'getdomainname', 'sethostname', 'setdomainname',
         'getprotobyname', 'getprotobynumber', 'htons', 'htonl', 'ntohs', 'ntohl',
         
-        # Class and object operations that could be exploited
-        'classtype', 'classname', 'classparent', 'classinfo', 'instancesize',
-        'inheritsfrom', 'methodaddress', 'methodname', 'fieldaddress',
-        
         # More Windows services
         'startservice', 'stopservice', 'controlservice', 'queryservice',
         'installservice', 'deleteservice', 'openservice', 'closeservice',
@@ -189,9 +178,9 @@ def run_code():
         'queryperformancefrequency', 'rdtsc',
         
         # Additional units that should be blocked
-        'registry', 'shellapi', 'comobj', 'variants', 'classes', 'inifiles',
+        'registry', 'shellapi', 'comobj', 'inifiles',
         'fileutil', 'lazfileutils', 'lclintf', 'forms', 'dialogs',
-        'strutils', 'dateutils', 'masks', 'typinfo', 'rtti'
+        'masks', 'rtti'
     ]
     
     if any(keyword in code.lower() for keyword in dangerous_keywords):
