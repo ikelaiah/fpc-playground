@@ -117,6 +117,81 @@ def run_code():
         # Unit/module inclusion that could be dangerous
         'dos', 'linux', 'windows', 'unix', 'baseunix', 'unixutil',
         'winsock', 'sockets', 'netdb', 'process', 'dynlibs'
+
+        # More file operations
+        'copyfile', 'movefile', 'createdir', 'forcedirectories', 'removetree',
+        'extractfilepath', 'extractfilename', 'extractfiledir', 'extractfileext',
+        'changefileext', 'expandfilename', 'fileexists', 'directoryexists',
+        'fileage', 'filedatetimetofiletime', 'filetimetofiledatetime',
+        'filegetdate', 'filesetdate', 'filegetattr', 'filesetattr',
+        'selectdirectory', 'createdirectory', 'gettempdirectory', 'gettempfilename',
+        
+        # Stream operations (can access files)
+        'filestream', 'createfilestream', 'openfilestream', 'tfilestream',
+        'tmemorystream', 'tstringstream', 'savetostream', 'loadfromstream',
+        'savetofile', 'createstream',
+        
+        # More Windows-specific dangerous operations
+        'copyfileex', 'movefileex', 'createfile', 'createfilemapping',
+        'mapviewoffile', 'unmapviewoffile', 'setfilepointer', 'setendoffile',
+        'getfilesize', 'getfiletime', 'setfiletime', 'getfileattributes',
+        'setfileattributes', 'findfirstfile', 'findnextfile', 'getlogicaldrives',
+        'getdrivetype', 'getdiskfreespace', 'setcurrentdirectory',
+        'getcurrentdirectory', 'createpipe', 'duplicatehandle',
+        
+        # Database operations (potential data access)
+        'sqlopen', 'sqlexec', 'sqlquery', 'database', 'opendatabase',
+        'closedatabase', 'execsql', 'openquery', 'closequery',
+        
+        # Compression/archive operations
+        'compress', 'decompress', 'zip', 'unzip', 'gzip', 'gunzip',
+        'extract', 'archive', 'addfile', 'extractfile',
+        
+        # Configuration and settings access
+        'inifiles', 'readini', 'writeini', 'tinifile', 'readstring',
+        'writestring', 'readsection', 'writesection', 'erasesection',
+        
+        # More memory and pointer operations
+        'new', 'dispose', 'mark', 'release', 'heapsize', 'maxavail',
+        'memavail', 'sizeof', 'typeinfo', 'gettypedata',
+        
+        # Exception handling that could mask security issues
+        'raise', 'try', 'except', 'finally', 'on', 'reraise',
+        
+        # RTTI and reflection (can access internals)
+        'published', 'rtti', 'typeinfo', 'getpropinfo', 'setpropvalue',
+        'getpropvalue', 'ispublishedprop', 'typinfo',
+        
+        # More Unix/Linux system calls
+        'fpopen', 'fpclose', 'fpread', 'fpwrite', 'fplseek', 'fpdup',
+        'fpdup2', 'fppipe', 'fpselect', 'fpmmap', 'fpmunmap',
+        'fpgetpid', 'fpgetppid', 'fpgetuid', 'fpgetgid', 'fpsetuid',
+        'fpsetgid', 'fpseteuid', 'fpsetegid', 'fpumask', 'fpgetcwd',
+        
+        # Variant and OLE operations (Windows)
+        'variant', 'olevariant', 'vartype', 'varclear', 'varcast',
+        'varastype', 'createoleobject', 'getactiveoleobject',
+        
+        # More networking
+        'gethostname', 'getdomainname', 'sethostname', 'setdomainname',
+        'getprotobyname', 'getprotobynumber', 'htons', 'htonl', 'ntohs', 'ntohl',
+        
+        # Class and object operations that could be exploited
+        'classtype', 'classname', 'classparent', 'classinfo', 'instancesize',
+        'inheritsfrom', 'methodaddress', 'methodname', 'fieldaddress',
+        
+        # More Windows services
+        'startservice', 'stopservice', 'controlservice', 'queryservice',
+        'installservice', 'deleteservice', 'openservice', 'closeservice',
+        
+        # Timing attacks and benchmarking
+        'gettickcount', 'timegettime', 'queryperformancecounter',
+        'queryperformancefrequency', 'rdtsc',
+        
+        # Additional units that should be blocked
+        'registry', 'shellapi', 'comobj', 'variants', 'classes', 'inifiles',
+        'fileutil', 'lazfileutils', 'lclintf', 'forms', 'dialogs',
+        'strutils', 'dateutils', 'masks', 'typinfo', 'rtti'
     ]
     
     if any(keyword in code.lower() for keyword in dangerous_keywords):
