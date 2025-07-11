@@ -66,7 +66,7 @@ def run_code():
         'getdir', 'setfileattr', 'getfileattr', 'diskfree', 'disksize',
         'chown', 'fpchown', 'link', 'fplink', 'symlink', 'fpsymlink',
         'readlink', 'fpreadlink', 'stat', 'fpstat', 'lstat', 'fplstat',
-        'access', 'fpaccess', 'utime', 'fputime',
+        'access', 'fpaccess', 'utime', 'fputime', 'loadfromfile'
         
         # Network operations
         'socket', 'bind', 'listen', 'accept', 'connect', 'fpsocket',
