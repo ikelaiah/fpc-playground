@@ -2,6 +2,25 @@ import subprocess
 import tempfile
 import os
 
+# Constants for resource limits
+CPU_TIME_LIMIT = 10          # seconds
+RAM_LIMIT = 64 * 1024 * 1024 # MB
+TIMEOUT_LIMIT = 20           # seconds
+
+def _limit_resources():
+    """
+    Limit resources for the subprocess (linux only).
+    """
+
+    import resource
+
+    # Set the max CPU time in seconds
+    resource.setrlimit(resource.RLIMIT_CPU, (CPU_TIME_LIMIT, CPU_TIME_LIMIT))
+
+    # Set max memory usage
+    resource.setrlimit(resource.RLIMIT_AS, (RAM_LIMIT, RAM_LIMIT))
+
+
 
 def compile_and_run(source_code: str):
     """
@@ -39,13 +58,18 @@ def compile_and_run(source_code: str):
         if compile_proc.returncode != 0:
             return compile_proc.stdout.decode('utf-8')
         
-        # Step 4: If compilation succeeded, run the compiled executable
-        run_proc = subprocess.run(
-            [exe_path],                          # Run the compiled program
-            stdout=subprocess.PIPE,              # Capture program output
-            stderr=subprocess.STDOUT,            # Capture any runtime errors
-            timeout=10                           # Prevent infinite loops (10 second limit)
-        )
-
-        # Step 5: Return the program's output
-        return run_proc.stdout.decode('utf-8')
+        try:
+            # Step 4: If compilation succeeded, run the compiled executable
+            run_proc = subprocess.run(
+                [exe_path],                          # Run the compiled program
+                stdout=subprocess.PIPE,              # Capture program output
+                stderr=subprocess.STDOUT,            # Capture any runtime errors
+                timeout=TIMEOUT_LIMIT                # Prevent infinite loops (TIMEOUT_LIMIT)
+                preexec_fn=_limit_resources if os.name != 'win32' else None 
+            )
+            # Step 5: Return the program's output
+            return run_proc.stdout.decode('utf-8')
+        except subprocess.TimeoutExpired:
+            return "Error: Program execution timed out"
+        except Exception as e:
+            return f"Error: {str(e)}"
