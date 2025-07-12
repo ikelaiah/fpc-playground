@@ -5,11 +5,14 @@ This Flask application provides a REST API for compiling and running Free Pascal
 It receives Pascal source code via HTTP POST requests and returns the execution results.
 """
 
+import code
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from fpc_runner import compile_and_run
+import base64
+from urllib.parse import unquote
 import os
 
 # Server configuration
@@ -27,16 +30,32 @@ app = Flask(__name__)
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["60 per hour", "10 per minute"],
+    default_limits=["600 per hour", "100 per minute"],
     storage_uri="memory://",
 )
 
 # Enable CORS for all routes (allows frontend to call backend from different origins)
 CORS(app)
 
+# Print startup information
+print(f"Flask app initialized. Backend port: {backend_port}", flush=True)
+print("Available routes:", flush=True)
+for rule in app.url_map.iter_rules():
+    print(f"  {rule.rule} -> {rule.endpoint}", flush=True)
 
+
+@app.route('/', methods=['GET'])
+def root():
+    """
+    Root endpoint for testing.
+    """
+    return jsonify({'message': 'FPC Playground Backend is running!'}), 200
+
+
+# Debugging log for /health endpoint
 @app.route('/health', methods=['GET'])
 def health():
+    print("/health endpoint accessed", flush=True)
     """
     Health endpoint to check if the server is running.
     
@@ -84,14 +103,12 @@ def run_code():
 
     # Check if the the request body can be parsed as JSON
     try:
-        code = request.get_json(force=True).get('code', '')
+        encodedCode = request.get_json(force=True).get('code', '')
     except Exception:
         return jsonify({'error':'Invalid JSON'}), 400
 
-    # Extract Pascal source code from the JSON request body
-    # Default to empty string if 'code' field is missing
-    code = request.json.get('code', '')
-
+    code = base64.b64decode(encodedCode).decode('utf-8')
+    
     # Check if the code exceeds the maximum allowed size
     if len(code) > MAX_CODE_SIZE:
         # Limit the size of the code to prevent usage abuse
@@ -251,6 +268,10 @@ def run_code():
 
 # Entry point: start the Flask development server
 if __name__ == '__main__':
+    print(f"Starting Flask server on {HOST}:{backend_port}", flush=True)
+    print("Available routes:", flush=True)
+    for rule in app.url_map.iter_rules():
+        print(f"  {rule.rule} -> {rule.endpoint}", flush=True)
     # Run the server with the following configuration:
     # - host='0.0.0.0': Accept connections from any IP address
     # - port=5000: Listen on port 5000
