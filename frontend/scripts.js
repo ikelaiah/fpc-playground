@@ -148,33 +148,18 @@ function initializePlayground() {
     console.log('Using backend URL:', backendUrl);
 
     async function runCode() {
+
+        // Get the current code from the editor
         const code = editor.getValue().trim();
         
+        // Fail early if no code is provided
         if (!code) {
             output.textContent = 'Please enter some Pascal code to run.';
             return;
         }
 
-        // Check for common Pascal syntax errors
-        if (code.includes('"')) {
-            // Check if it's used in string literals (common mistake)
-            const doubleQuotePattern = /writeln\s*\(\s*"[^"]*"\s*\)/i;
-            const printPattern = /write\s*\(\s*"[^"]*"\s*\)/i;
-            
-            if (doubleQuotePattern.test(code) || printPattern.test(code)) {
-                output.textContent = '❌ Pascal Syntax Error: Use single quotes (\') for strings, not double quotes (").\n\n' +
-                    'Correct: writeln(\'Hello, World!\');\n' +
-                    'Incorrect: writeln("Hello, World!");\n\n' +
-                    '💡 Tip: Click the "🔧 Fix Quotes" button to automatically fix this!';
-                return;
-            }
-            
-            // General warning for any double quotes
-            output.textContent = '❌ Pascal Syntax Error: Pascal uses single quotes (\') for strings, not double quotes (").\n\n' +
-                'Please replace all " with \' in your string literals.\n\n' +
-                '💡 Tip: Click the "🔧 Fix Quotes" button to automatically fix this!';
-            return;
-        }
+        //Else, encode code with base64
+        const encodedCode = btoa(String.fromCharCode(...new TextEncoder().encode(code)));
 
         // Update UI to show loading state
         runBtn.disabled = true;
@@ -183,7 +168,7 @@ function initializePlayground() {
 
         try {
             // Prepare the request payload
-            const payload = { code: code };
+            const payload = { code: encodedCode };
             
             // Send code to backend
             const response = await fetch(backendUrl + '/run', {

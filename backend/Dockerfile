@@ -37,4 +37,4 @@ EXPOSE 5000
 
 # Run the server using the virtual environment Python interpreter
 # Note: Must use /app/venv/bin/python instead of system python3 to access installed packages
-CMD ["/app/venv/bin/python", "main.py"]
+CMD ["/app/venv/bin/python", "-u",  "main.py"]
