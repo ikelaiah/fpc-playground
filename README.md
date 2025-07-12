@@ -30,9 +30,7 @@ A simple way to run Free Pascal programs in the browser so new developers can le
       - [Frontend](#frontend)
   - [🧪 Testing with `curl`](#-testing-with-curl)
     - [Test a simple "Hello, World!" program](#test-a-simple-hello-world-program)
-  - [🚩 Common Issues](#-common-issues)
-    - [Double Quotes in Strings](#double-quotes-in-strings)
-  - [🙌 Contributing](#-contributing)
+  - [� Contributing](#-contributing)
   - [⚖️ License](#️-license)
   - [🙏 Acknowledgments](#-acknowledgments)
 
@@ -128,23 +126,6 @@ cat > test.json << 'EOF'
 EOF
 curl -X POST http://localhost:5000/run -H "Content-Type: application/json" -d @test.json
 ```
-
-## 🚩 Common Issues
-
-### Double Quotes in Strings
-Pascal uses single quotes `'` for strings, not double quotes `"`. If you use double quotes, you'll get a syntax error.
-
-❌ **Incorrect:**
-```pascal
-writeln("Hello, World!");
-```
-
-✅ **Correct:**
-```pascal
-writeln('Hello, World!');
-```
-
-💡 **Tip:** Use the "🔧 Fix Quotes" button to automatically convert double quotes to single quotes!
 
 ## 🙌 Contributing
 We welcome contributions! To contribute:
