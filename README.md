@@ -18,7 +18,7 @@ Give it a try here: [FPC Playground](https://fpc-playground-app-mgeib.ondigitalo
 > [!WARNING]
 > Not production ready yet. This project is still a work in progress and will not support all Free Pascal features.
 
-![FPC Playground Screenshot](assets/2025-07-10-1723-screeenshot_00.png)
+![FPC Playground Screenshot](assets/2025-07-14-0832-screenshot_00.png)
 
 ## Table of Contents
 - [🚀 FPC Playground](#-fpc-playground)
