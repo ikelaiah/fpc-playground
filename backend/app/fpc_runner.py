@@ -22,12 +22,14 @@ def _limit_resources():
 
 
 
-def compile_and_run(source_code: str):
+def compile_and_run(source_code: str, program_args:str = '', user_input: str = '') -> str:
     """
     Compiles and runs Free Pascal code in a secure temporary environment.
     
     Args:
         source_code (str): The Pascal source code to compile and execute
+        program_args (str): Arguments to pass to the program
+        user_input (str): Input to provide to the program during execution 
         
     Returns:
         str: Either the program output (if successful) or compilation errors
@@ -39,8 +41,8 @@ def compile_and_run(source_code: str):
         # Step 1: Write the source code to a temporary .pas file
         file_path = os.path.join(tempdir, 'temp_program.pas')
         with open(file_path, 'w') as source_file:
-            source_file.write(source_code)
-        
+            source_file.write(source_code) 
+
         # Step 2: Compile the Pascal source code using Free Pascal Compiler (fpc)
         # Note: FPC creates executable with same name as source file (without .pas extension)
         compile_proc = subprocess.run(
@@ -60,15 +62,29 @@ def compile_and_run(source_code: str):
         
         try:
             # Step 4: If compilation succeeded, run the compiled executable
+            # Pass the program arguments if provided
+            cmd = [exe_path]
+            if program_args.strip():
+                # Split the program arguments by spaces
+                cmd.extend(program_args.split())
+
+            # Step 5: Prepare input for the program
+            stdin_input = None
+            if user_input.strip():
+                stdin_input = user_input
+            
+            # Step 6: Run the compiled executable
             run_proc = subprocess.run(
-                [exe_path],                          # Run the compiled program
+                cmd,
+                input=stdin_input,                   # Provide input to the program
                 stdout=subprocess.PIPE,              # Capture program output
                 stderr=subprocess.STDOUT,            # Capture any runtime errors
-                timeout=TIMEOUT_LIMIT,                # Prevent infinite loops (TIMEOUT_LIMIT)
+                text=True,                           # Decode output as text                
+                timeout=TIMEOUT_LIMIT,               # Prevent infinite loops (TIMEOUT_LIMIT)
                 preexec_fn=_limit_resources if os.name != 'win32' else None 
             )
-            # Step 5: Return the program's output
-            return run_proc.stdout.decode('utf-8')
+            # Step 7: Return the program's output
+            return run_proc.stdout
         except subprocess.TimeoutExpired:
             return "Error: Program execution timed out"
         except Exception as e:
