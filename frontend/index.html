@@ -12,6 +12,7 @@
     <style type="text/css" media="screen">
         body {
             font-family: monaco, Consolas, 'Lucida Console', monospace;
+            font-size: 16px;
         }
 
         button {
@@ -20,12 +21,20 @@
             font-size: 15px;
         }
 
+        label {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 16px;
+        }
+
         .container {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
-
 
         .actions {
             margin-top: 0.5em;
@@ -124,10 +133,13 @@
 </head>
 
 <body>
+
     <main class="container">
         <header>
-            <h3>🚀 Free Pascal Playground (v0.1.0)</h3>
+            <h4>🚀 Free Pascal Playground (v0.2.0)</h4>
             <p>Compile and run Free Pascal code in your browser</p>
+            <a href="https://github.com/ikelaiah/fpc-playground" target="_blank" class="button primary">View on
+                GitHub</a>
         </header>
 
         <!-- Top: Buttons + Examples -->
@@ -160,14 +172,14 @@
         <div class="main-panel">
             <!-- Code Editor Panel -->
             <div class="code-panel">
-                <h4>Code Editor</h4>
+                <h5>Code Editor</h5>
                 <!-- Ace editor -->
                 <div id="editor"></div>
             </div>
             <hr>
             <!-- Output Panel -->
             <div class="output-panel">
-                <h4>Output</h4>
+                <h5>Output</h5>
                 <div id="output" class="output-box">Ready to run your Pascal code...</div>
             </div>
         </div>
