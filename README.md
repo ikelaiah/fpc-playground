@@ -8,29 +8,38 @@
 ![Web](https://img.shields.io/badge/Web-HTML%2FCSS%2FJS-E34F26?logo=html5)
 ![Supports Windows](https://img.shields.io/badge/support-Windows-F59E0B?logo=Windows)
 ![Supports Linux](https://img.shields.io/badge/support-Linux-F59E0B?logo=Linux)
-[![Version](https://img.shields.io/badge/version-0.1.0-8B5CF6.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-8B5CF6.svg)](CHANGELOG.md)
 
 
 A simple way to run Free Pascal programs in the browser so new developers can learn the language without having to install anything.
 
+Give it a try here: [FPC Playground](https://fpc-playground-app-mgeib.ondigitalocean.app/)
+
 > [!WARNING]
 > Not production ready yet. This project is still a work in progress and will not support all Free Pascal features.
 
-![FPC Playground Screenshot](assets/2025-07-10-1723-screeenshot_00.png)
+![FPC Playground Screenshot](assets/2025-07-14-0832-screenshot_00.png)
 
 ## Table of Contents
 - [🚀 FPC Playground](#-fpc-playground)
   - [Table of Contents](#table-of-contents)
   - [🌟 Features](#-features)
   - [✋ Prerequisites](#-prerequisites)
+  - [🚀 Quick Start](#-quick-start)
+  - [⭐ Feedback](#-feedback)
   - [🏃 Running Locally](#-running-locally)
     - [Using Docker Compose](#using-docker-compose)
+  - [🎓 Using the Playground](#-using-the-playground)
+    - [**Code Editor**](#code-editor)
+    - [**Program Arguments**](#program-arguments)
+    - [**User Input**](#user-input)
+    - [**Example Usage**](#example-usage)
     - [Without Docker Compose](#without-docker-compose)
       - [Backend](#backend)
       - [Frontend](#frontend)
   - [🧪 Testing with `curl`](#-testing-with-curl)
     - [Test a simple "Hello, World!" program](#test-a-simple-hello-world-program)
-  - [� Contributing](#-contributing)
+  - [🙌 Contributing](#-contributing)
   - [⚖️ License](#️-license)
   - [🙏 Acknowledgments](#-acknowledgments)
 
@@ -38,13 +47,24 @@ A simple way to run Free Pascal programs in the browser so new developers can le
 
 - **Web-based Pascal editor** with syntax highlighting
 - **Real-time compilation** and execution
+- **Program arguments support** - Pass command line arguments to your Pascal programs
+- **User input support** - Handle `ReadLn()` statements with dedicated input fields
 - **Example programs** to get started quickly
 - **Error detection** for common Pascal syntax mistakes
 - **Security filtering** to prevent dangerous operations
+- **Educational-friendly interface** with clear separation of code, input, and output
 
 ## ✋ Prerequisites
 
 Make sure you have Docker installed. You can download it from [Docker's official site](https://www.docker.com/get-started).
+
+## 🚀 Quick Start
+1. Clone the repository: `git clone https://github.com/ikelaiah/fpc-playground.git`
+2. Run Docker Compose: `docker-compose up`
+3. Access the frontend at `http://localhost:8080` and start coding!
+
+## ⭐ Feedback
+We value your feedback! If you enjoy using FPC Playground, please star the repository and share your thoughts.
 
 ## 🏃 Running Locally
 
@@ -71,6 +91,53 @@ docker-compose up
 ```
 
 4. Access the frontend at `http://localhost:8080` and the backend at `http://localhost:5000`.
+
+## 🎓 Using the Playground
+
+The FPC Playground provides an intuitive interface for learning Pascal programming:
+
+### **Code Editor**
+- Write your Pascal code with syntax highlighting
+- Use the example buttons to load pre-written programs
+- Fix quotes automatically for Pascal compatibility
+
+### **Program Arguments**
+- Use the "Program Arguments" textarea to pass command line arguments to your program
+- Separate multiple arguments with spaces
+- Example: `arg1 arg2 arg3`
+
+### **User Input**
+- Use the "User Input" textarea to provide input for `ReadLn()` statements
+- Enter each input value on a separate line
+- The program will read these values in order when it encounters `ReadLn()`
+
+### **Example Usage**
+```pascal
+program TestInput;
+var
+    name: string;
+    age: integer;
+begin
+    writeln('What is your name?');
+    readln(name);
+    writeln('How old are you?');
+    readln(age);
+    writeln('Hello ', name, ', you are ', age, ' years old!');
+end.
+```
+
+For this program, enter in the User Input field:
+```
+John
+25
+```
+
+The output will be:
+```
+What is your name?
+How old are you?
+Hello John, you are 25 years old!
+```
 
 ### Without Docker Compose
 

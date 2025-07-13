@@ -20,7 +20,8 @@ HOST = '0.0.0.0'  # Listen on all network interfaces (allows external connection
 
 MAX_CODE_SIZE = 16 * 1024    # Max number of characters allowed in pascal code
 MAX_OUTPUT_SIZE = 48 * 1024  # Max number of characters output
-
+MAX_ARGS_SIZE = 64          # Max number of characters allowed in program arguments
+MAX_INPUT_SIZE = 64         # Max number of characters allowed in user input
 
 # Get backend port from environment variable or default to 5000
 backend_port = os.getenv('BACKEND_PORT', '5000')
@@ -104,15 +105,27 @@ def run_code():
     # Check if the the request body can be parsed as JSON
     try:
         encodedCode = request.get_json(force=True).get('code', '')
+        encodedArgs = request.get_json(force=True).get('args', '')
+        encodedInput = request.get_json(force=True).get('input', '')
     except Exception:
         return jsonify({'error':'Invalid JSON'}), 400
 
     code = base64.b64decode(encodedCode).decode('utf-8')
-    
+    args = base64.b64decode(encodedArgs).decode('utf-8')
+    user_input = base64.b64decode(encodedInput).decode('utf-8')
+
     # Check if the code exceeds the maximum allowed size
     if len(code) > MAX_CODE_SIZE:
         # Limit the size of the code to prevent usage abuse
         return jsonify({'error' : f'Code size exceeds limit of {MAX_CODE_SIZE:,} characters.'}), 400
+
+    # Check if the program arguments exceed the maximum allowed size
+    if len(args) > MAX_ARGS_SIZE:
+        return jsonify({'error' : f'Program arguments size exceeds limit of {MAX_ARGS_SIZE:,} characters.'}), 400  
+    
+    # Check if the user input exceeds the maximum allowed size
+    if len(user_input) > MAX_INPUT_SIZE:
+        return jsonify({'error' : f'User input size exceeds limit of {MAX_INPUT_SIZE:,} characters.'}), 400 
 
     # List of dangerous Pascal procedures/functions that could compromise security
     dangerous_keywords = [
@@ -255,7 +268,7 @@ def run_code():
         return jsonify({'error': 'Code contains restricted keywords.'}), 400
 
     # Compile and run the Pascal code using our FPC runner module
-    output = compile_and_run(code)
+    output = compile_and_run(code, args, user_input)
     
 
     # Limit the output size

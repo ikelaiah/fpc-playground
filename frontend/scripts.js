@@ -151,6 +151,8 @@ function initializePlayground() {
 
         // Get the current code from the editor
         const code = editor.getValue().trim();
+        const programArgs = document.getElementById('program-args').value.trim();
+        const userInput = document.getElementById('user-input').value.trim();
         
         // Fail early if no code is provided
         if (!code) {
@@ -160,6 +162,9 @@ function initializePlayground() {
 
         //Else, encode code with base64
         const encodedCode = btoa(String.fromCharCode(...new TextEncoder().encode(code)));
+        const encodedArgs = btoa(String.fromCharCode(...new TextEncoder().encode(programArgs)));
+        const encodedInput = btoa(String.fromCharCode(...new TextEncoder().encode(userInput)));
+        
 
         // Update UI to show loading state
         runBtn.disabled = true;
@@ -168,7 +173,9 @@ function initializePlayground() {
 
         try {
             // Prepare the request payload
-            const payload = { code: encodedCode };
+            const payload = { code: encodedCode, 
+                              args: encodedArgs, 
+                              input: encodedInput};
             
             // Send code to backend
             const response = await fetch(backendUrl + '/run', {
