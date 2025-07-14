@@ -22,15 +22,6 @@ RUN apt-get update && apt-get install -y \
 # Create a non-root user
 RUN groupadd -r fpcuser && useradd -r -g fpcuser -m fpcuser
 
-# Remove potentially dangerous system tools and shells
-RUN rm -f /bin/sh /bin/bash /bin/dash /bin/ash \
-    /usr/bin/wget /usr/bin/curl /usr/bin/nc /usr/bin/netcat \
-    /usr/bin/telnet /usr/bin/ssh /usr/bin/scp /usr/bin/rsync \
-    /usr/bin/git /usr/bin/vim /usr/bin/nano /usr/bin/less \
-    /usr/bin/more /usr/bin/cat /usr/bin/tail /usr/bin/head \
-    /bin/cat /bin/more /bin/less \
-    && ln -sf /bin/false /bin/sh
-
 # Set working directory and copy files
 # Note: Copy requirements.txt first for better Docker layer caching
 WORKDIR /app
@@ -47,6 +38,15 @@ COPY app/ ./
 
 # Change ownership of the entire app folder to the non-root user
 RUN chown -R fpcuser:fpcuser /app
+
+# Remove potentially dangerous system tools and shells (AFTER all RUN commands)
+RUN rm -f /bin/bash /bin/dash /bin/ash \
+    /usr/bin/wget /usr/bin/curl /usr/bin/nc /usr/bin/netcat \
+    /usr/bin/telnet /usr/bin/ssh /usr/bin/scp /usr/bin/rsync \
+    /usr/bin/git /usr/bin/vim /usr/bin/nano /usr/bin/less \
+    /usr/bin/more /usr/bin/cat /usr/bin/tail /usr/bin/head \
+    /bin/cat /bin/more /bin/less \
+    && ln -sf /bin/false /bin/sh
 
 # Switch to non-root user for security
 USER fpcuser
