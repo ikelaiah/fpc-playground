@@ -194,7 +194,7 @@ def run_code():
     # Critical security checks for advanced exploits
     if any(pattern in code.lower() for pattern in [
         # Direct system call exploits
-        'syscall', 'cdecl', 'external', 'name', 'nativeuint', 'pchar',
+        'syscall', 'cdecl', 'external', 'nativeuint', 'pchar',
         # Assembly and low-level operations
         'asm', 'inline', '@', 'absolute',
         # External linking and library calls
@@ -208,7 +208,7 @@ def run_code():
         # Command execution patterns
         '/bin/', '/usr/', '/etc/', 'sh', 'bash', 'cmd',
     ]):
-        return jsonify({'error': 'Code contains advanced exploit patterns.'}), 400
+        return jsonify({'error': 'Code contains exploit patterns.'}), 400
 
     # Advanced pattern detection using regex for more sophisticated exploits
     suspicious_patterns = [
@@ -223,7 +223,7 @@ def run_code():
     
     for pattern in suspicious_patterns:
         if re.search(pattern, code, re.IGNORECASE | re.MULTILINE):
-            return jsonify({'error': 'Code contains sophisticated exploit patterns.'}), 400
+            return jsonify({'error': 'Code contains suspicious patterns.'}), 400
 
     # Compile and run the Pascal code using our FPC runner module
     output = compile_and_run(code, args, user_input)
