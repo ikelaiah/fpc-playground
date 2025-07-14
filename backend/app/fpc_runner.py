@@ -37,39 +37,6 @@ def _limit_resources():
         pass  # Some limits might not be available on all systems
 
 
-def _validate_pascal_code(source_code: str) -> bool:
-    """
-    Validate Pascal code for basic structure and dangerous patterns.
-    
-    Args:
-        source_code (str): The Pascal source code to validate
-        
-    Returns:
-        bool: True if code appears safe, False otherwise
-    """
-    code_lower = source_code.lower()
-    
-    # Check for required Pascal program structure
-    if not ('program ' in code_lower or 'unit ' in code_lower):
-        return False
-    
-    # Reject any external declarations
-    if 'external' in code_lower:
-        return False
-    
-    # Reject system calls and low-level operations
-    dangerous_patterns = [
-        'syscall', 'cdecl', 'stdcall', 'safecall',
-        'nativeuint', 'nativeint', 'ptruint', 'ptrint',
-        'pchar', 'pointer', '^', '@', 'addr',
-        '/bin/', '/usr/', '/etc/', 'sh', 'bash', 'cmd',
-        '{$', '(*$', 'asm ', 'inline ',
-        'external', 'name', 'index', 'import'
-    ]
-    
-    return not any(pattern in code_lower for pattern in dangerous_patterns)
-
-
 def compile_and_run(source_code: str, program_args:str = '', user_input: str = '') -> str:
     """
     Compiles and runs Free Pascal code in a secure temporary environment.
@@ -82,10 +49,6 @@ def compile_and_run(source_code: str, program_args:str = '', user_input: str = '
     Returns:
         str: Either the program output (if successful) or compilation errors
     """
-    
-    # Pre-validation of Pascal code
-    if not _validate_pascal_code(source_code):
-        return "Error: Code contains potentially dangerous patterns or invalid structure"
     
     # Create a temporary directory that will be automatically cleaned up
     # This ensures no leftover files and provides isolation between runs

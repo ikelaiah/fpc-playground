@@ -182,8 +182,8 @@ def run_code():
         'mv', 'cp', 'find', 'grep', 'awk', 'sed', 'tar', 'zip', 'unzip',
 
         # Units that could compromise security
-        'dos', 'dynlibs', 'unix', 'baseunix', 'unixutil', 'windows', 'fileutil',
-        'lazfileutils', 'shellapi', 'registry', 'sysutils', 'typinfo', 'variants',
+        'dos', 'dynlibs', 'unix', 'baseunix', 'unixutil', 'windows', 
+        'fileutil', 'lazfileutils', 'shellapi', 'registry',
         'printer', 'ports', 'video', 'WinDirs', 'WinCRT', 'ipc', 'go32', 'crt'
     ]
     
@@ -194,17 +194,17 @@ def run_code():
     # Critical security checks for advanced exploits
     if any(pattern in code.lower() for pattern in [
         # Direct system call exploits
-        'syscall', 'cdecl', 'external', 'nativeuint', 'pchar',
+        'syscall', 'cdecl', 'nativeuint', 'pchar',
         # Assembly and low-level operations
         'asm', 'inline', '@', 'absolute',
         # External linking and library calls
-        'external', 'cdecl', 'stdcall', 'pascal', 'safecall',
+        'cdecl', 'stdcall', 'safecall',
         # Pointer operations and memory manipulation
         'pointer', 'ptr', 'addr', '^', '@',
         # System-level constants and types
-        'nativeuint', 'nativeint', 'ptruint', 'ptrint',
+        'nativeuint', 'ptruint', 'ptrint',
         # File handles and descriptors
-        'thandle', 'handle', 'hfile',
+        'thandle', 'hfile',
         # Command execution patterns
         '/bin/', '/usr/', '/etc/', 'sh', 'bash', 'cmd',
     ]):
