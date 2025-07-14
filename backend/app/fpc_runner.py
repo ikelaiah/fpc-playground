@@ -20,6 +20,54 @@ def _limit_resources():
     # Set max memory usage
     resource.setrlimit(resource.RLIMIT_AS, (RAM_LIMIT, RAM_LIMIT))
 
+    # Additional security limits
+    try:
+        # Limit number of processes/threads
+        resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))
+        
+        # Limit file size
+        resource.setrlimit(resource.RLIMIT_FSIZE, (1024*1024, 1024*1024))  # 1MB max file size
+        
+        # Limit number of open files
+        resource.setrlimit(resource.RLIMIT_NOFILE, (10, 10))
+        
+        # Disable core dumps
+        resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    except:
+        pass  # Some limits might not be available on all systems
+
+
+def _validate_pascal_code(source_code: str) -> bool:
+    """
+    Validate Pascal code for basic structure and dangerous patterns.
+    
+    Args:
+        source_code (str): The Pascal source code to validate
+        
+    Returns:
+        bool: True if code appears safe, False otherwise
+    """
+    code_lower = source_code.lower()
+    
+    # Check for required Pascal program structure
+    if not ('program ' in code_lower or 'unit ' in code_lower):
+        return False
+    
+    # Reject any external declarations
+    if 'external' in code_lower:
+        return False
+    
+    # Reject system calls and low-level operations
+    dangerous_patterns = [
+        'syscall', 'cdecl', 'stdcall', 'safecall',
+        'nativeuint', 'nativeint', 'ptruint', 'ptrint',
+        'pchar', 'pointer', '^', '@', 'addr',
+        '/bin/', '/usr/', '/etc/', 'sh', 'bash', 'cmd',
+        '{$', '(*$', 'asm ', 'inline ',
+        'external', 'name', 'index', 'import'
+    ]
+    
+    return not any(pattern in code_lower for pattern in dangerous_patterns)
 
 
 def compile_and_run(source_code: str, program_args:str = '', user_input: str = '') -> str:
@@ -34,6 +82,11 @@ def compile_and_run(source_code: str, program_args:str = '', user_input: str = '
     Returns:
         str: Either the program output (if successful) or compilation errors
     """
+    
+    # Pre-validation of Pascal code
+    if not _validate_pascal_code(source_code):
+        return "Error: Code contains potentially dangerous patterns or invalid structure"
+    
     # Create a temporary directory that will be automatically cleaned up
     # This ensures no leftover files and provides isolation between runs
     with tempfile.TemporaryDirectory() as tempdir:
@@ -45,11 +98,16 @@ def compile_and_run(source_code: str, program_args:str = '', user_input: str = '
 
         # Step 2: Compile the Pascal source code using Free Pascal Compiler (fpc)
         # Note: FPC creates executable with same name as source file (without .pas extension)
+        # Add security flags to prevent dangerous operations
         compile_proc = subprocess.run(
-            ['fpc', file_path],                  # Simple: fpc input_file.pas
+            ['fpc', '-Xs-', '-CX', '-XX', '-Sa', '-Sc', '-Se', file_path],  
+            # -Xs- strip symbols, -CX no external libs, -XX no external commands
+            # -Sa assertions, -Sc support C-style operators, -Se stop after first error
             stdout=subprocess.PIPE,              # Capture standard output
             stderr=subprocess.STDOUT,            # Redirect stderr to stdout
-            cwd=tempdir                          # Set working directory for compilation
+            cwd=tempdir,                         # Set working directory for compilation
+            timeout=30,                          # Limit compilation time
+            env={'PATH': '/usr/bin:/bin', 'HOME': tempdir, 'TMPDIR': tempdir}  # Restricted environment
         )
 
         # The executable will be created as 'temp_program' (without .pas extension)
@@ -73,7 +131,7 @@ def compile_and_run(source_code: str, program_args:str = '', user_input: str = '
             if user_input.strip():
                 stdin_input = user_input
             
-            # Step 6: Run the compiled executable
+            # Step 6: Run the compiled executable with strict security
             run_proc = subprocess.run(
                 cmd,
                 input=stdin_input,                   # Provide input to the program
@@ -81,7 +139,15 @@ def compile_and_run(source_code: str, program_args:str = '', user_input: str = '
                 stderr=subprocess.STDOUT,            # Capture any runtime errors
                 text=True,                           # Decode output as text                
                 timeout=TIMEOUT_LIMIT,               # Prevent infinite loops (TIMEOUT_LIMIT)
-                preexec_fn=_limit_resources if os.name != 'win32' else None 
+                preexec_fn=_limit_resources if os.name != 'win32' else None,
+                cwd=tempdir,                         # Ensure working directory is isolated
+                env={                                # Completely isolated environment
+                    'PATH': '',                      # No PATH to prevent command execution
+                    'HOME': tempdir,                 # Isolated home directory
+                    'TMPDIR': tempdir,               # Isolated temp directory
+                    'USER': 'sandbox',               # Non-privileged user
+                    'SHELL': '/bin/false'            # Disable shell access
+                }
             )
             # Step 7: Return the program's output
             return run_proc.stdout

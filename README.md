@@ -8,7 +8,7 @@
 ![Web](https://img.shields.io/badge/Web-HTML%2FCSS%2FJS-E34F26?logo=html5)
 ![Supports Windows](https://img.shields.io/badge/support-Windows-F59E0B?logo=Windows)
 ![Supports Linux](https://img.shields.io/badge/support-Linux-F59E0B?logo=Linux)
-[![Version](https://img.shields.io/badge/version-0.2.0-8B5CF6.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.1-8B5CF6.svg)](CHANGELOG.md)
 
 
 A simple way to run Free Pascal programs in the browser so new developers can learn the language without having to install anything.

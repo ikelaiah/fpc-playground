@@ -14,6 +14,7 @@ from fpc_runner import compile_and_run
 import base64
 from urllib.parse import unquote
 import os
+import re
 
 # Server configuration
 HOST = '0.0.0.0'  # Listen on all network interfaces (allows external connections)
@@ -37,6 +38,15 @@ limiter = Limiter(
 
 # Enable CORS for all routes (allows frontend to call backend from different origins)
 CORS(app)
+
+# Add security headers
+@app.after_request
+def add_security_headers(response):
+    response.headers['Content-Security-Policy'] = "default-src 'self'"
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
 
 # Print startup information
 print(f"Flask app initialized. Backend port: {backend_port}", flush=True)
@@ -127,17 +137,17 @@ def run_code():
     if len(user_input) > MAX_INPUT_SIZE:
         return jsonify({'error' : f'User input size exceeds limit of {MAX_INPUT_SIZE:,} characters.'}), 400 
 
+    # Validate input characters to prevent encoding attacks
+    if any(ord(char) < 32 or ord(char) > 126 for char in code if char not in '\n\r\t'):
+        return jsonify({'error': 'Code contains invalid characters.'}), 400
+
+    # Check for excessive nested structures that could cause compilation issues
+    if code.count('begin') > 20 or code.count('(') > 100 or code.count('[') > 50:
+        return jsonify({'error': 'Code structure too complex.'}), 400
+
     # List of dangerous Pascal procedures/functions that could compromise security
     dangerous_keywords = [
-        # System command execution
-        'system', 'fpsystem', 'exec', 'execl', 'execv', 'execve', 'execvp',
-        'winexec', 'shellexecute', 'createprocess',
-        
-        # Process management
-        'fork', 'fpfork', 'shell', 'popen', 'fpexecv', 'fpexecve', 'fpexecvp',
-        'waitpid', 'fpwaitpid', 'kill', 'fpkill', 'signal', 'fpsignal',
-        
-        # File system operations (potentially dangerous - NO local file saving allowed)
+        # File system operations (prevent browsing, creating, or deleting files/folders)
         'deletefile', 'removedir', 'rename', 'rmdir', 'unlink', 'fpunlink',
         'mkdir', 'fpmkdir', 'chdir', 'fpchdir', 'chmod', 'fpchmod',
         'assign', 'rewrite', 'append', 'reset', 'close', 'assignfile',
@@ -146,126 +156,77 @@ def run_code():
         'getdir', 'setfileattr', 'getfileattr', 'diskfree', 'disksize',
         'chown', 'fpchown', 'link', 'fplink', 'symlink', 'fpsymlink',
         'readlink', 'fpreadlink', 'stat', 'fpstat', 'lstat', 'fplstat',
-        'access', 'fpaccess', 'utime', 'fputime', 'loadfromfile'
-        
-        # Network operations
-        'socket', 'bind', 'listen', 'accept', 'connect', 'fpsocket',
-        'fpbind', 'fplisten', 'fpaccept', 'fpconnect', 'send', 'recv',
-        'fpsend', 'fprecv', 'sendto', 'recvfrom', 'fpsendto', 'fprecvfrom',
-        'setsockopt', 'getsockopt', 'fpsetsockopt', 'fpgetsockopt',
-        'shutdown', 'fpshutdown', 'gethostbyname', 'gethostbyaddr',
-        'getservbyname', 'getservbyport', 'inet_addr', 'inet_ntoa',
-        
-        # Memory/pointer manipulation (advanced, potentially unsafe)
+        'access', 'fpaccess', 'utime', 'fputime', 'loadfromfile', 'savetofile',
+        'tfilestream', 'tmemorystream', 'tstringstream', 'savetostream', 'loadfromstream',
+        'createdirectory', 'removetree', 'forcedirectories', 'fileexists', 'directoryexists',
+
+        # Memory/pointer manipulation (prevent adding processes in memory)
         'getmem', 'freemem', 'reallocmem', 'ptr', 'addr', 'pointer',
         'allocmem', 'memsize', 'getmemorymanager', 'setmemorymanager',
         'move', 'fillchar', 'fillbyte', 'filldword', 'fillqword',
         'copymemory', 'zeromemory', 'comparemem',
-        
-        # Dynamic loading
+
+        # Process management (prevent OS process manipulation)
+        'fork', 'fpfork', 'shell', 'popen', 'fpexecv', 'fpexecve', 'fpexecvp',
+        'waitpid', 'fpwaitpid', 'kill', 'fpkill', 'signal', 'fpsignal',
+
+        # Dynamic loading (prevent loading libraries)
         'loadlibrary', 'getprocaddress', 'freelibrary', 'dlopen', 'dlsym',
         'dlclose', 'dlerror', 'dynlibs',
-        
-        # Environment manipulation
-        'setenv', 'fpsetenv', 'getenv', 'fpgetenv', 'putenv', 'fpputenv',
-        'unsetenv', 'fpunsetenv', 'clearenv', 'fpclearenv',
-        'getenvironmentvariable', 'setenvironmentvariable',
-        
-        # Registry operations (Windows)
-        'registry', 'regcreatekey', 'regsetvalue', 'regdeletekey',
-        'regdeletevalue', 'regqueryvalue', 'regopenkey', 'regclosekey',
-        
-        # Threading and synchronization (can be used for DoS)
-        'beginthread', 'endthread', 'createthread', 'terminatethread',
-        'suspendthread', 'resumethread', 'waitforsingleobject',
-        'waitformultipleobjects', 'createmutex', 'createevent',
-        'createsemaphore', 'criticalsection',
-        
-        # Time-based attacks and delays
-        'sleep', 'delay', 'fpsleep', 'nanosleep', 'fpnanosleep',
-        
-        # Interrupt handling
-        'setintvec', 'getintvec', 'intr',
-        
-        # Direct hardware access
-        'port', 'portb', 'portw', 'portl', 'memw', 'meml', 'mem',
-        'inportb', 'outportb', 'inport', 'outport',
-        
-        # Assembly and low-level operations
-        'asm', 'absolute',
-        
-        # Unit/module inclusion that could be dangerous
-        'dos', 'linux', 'windows', 'unix', 'baseunix', 'unixutil',
-        'winsock', 'sockets', 'netdb', 'process', 'dynlibs'
 
-        # More file operations
-        'copyfile', 'movefile', 'createdir', 'forcedirectories', 'removetree',
-        'extractfilepath', 'extractfilename', 'extractfiledir', 'extractfileext',
-        'changefileext', 'expandfilename', 'fileexists', 'directoryexists',
-        'fileage', 'filedatetimetofiletime', 'filetimetofiledatetime',
-        'filegetdate', 'filesetdate', 'filegetattr', 'filesetattr',
-        'selectdirectory', 'createdirectory', 'gettempdirectory', 'gettempfilename',
-        
-        # Stream operations (can access files)
-        'filestream', 'createfilestream', 'openfilestream', 'tfilestream',
-        'tmemorystream', 'tstringstream', 'savetostream', 'loadfromstream',
-        'savetofile', 'createstream',
-        
-        # More Windows-specific dangerous operations
-        'copyfileex', 'movefileex', 'createfile', 'createfilemapping',
-        'mapviewoffile', 'unmapviewoffile', 'setfilepointer', 'setendoffile',
-        'getfilesize', 'getfiletime', 'setfiletime', 'getfileattributes',
-        'setfileattributes', 'findfirstfile', 'findnextfile', 'getlogicaldrives',
-        'getdrivetype', 'getdiskfreespace', 'setcurrentdirectory',
-        'getcurrentdirectory', 'createpipe', 'duplicatehandle',
-        
-        # Database operations (potential data access)
-        'sqlopen', 'sqlexec', 'sqlquery', 'database', 'opendatabase',
-        'closedatabase', 'execsql', 'openquery', 'closequery',
-        
-        # Compression/archive operations
-        'compress', 'decompress', 'zip', 'unzip', 'gzip', 'gunzip',
-        'extract', 'archive', 'addfile', 'extractfile',
-        
-        # Configuration and settings access
-        'inifiles', 'readini', 'writeini', 'tinifile', 'readstring',
-        'writestring', 'readsection', 'writesection', 'erasesection',
-        
-        # RTTI and reflection (can access internals)
-        'published', 'rtti', 'typeinfo', 'getpropinfo', 'setpropvalue',
-        'getpropvalue', 'ispublishedprop', 'typinfo',
-        
-        # More Unix/Linux system calls
-        'fpopen', 'fpclose', 'fpread', 'fpwrite', 'fplseek', 'fpdup',
-        'fpdup2', 'fppipe', 'fpselect', 'fpmmap', 'fpmunmap',
-        'fpgetpid', 'fpgetppid', 'fpgetuid', 'fpgetgid', 'fpsetuid',
-        'fpsetgid', 'fpseteuid', 'fpsetegid', 'fpumask', 'fpgetcwd',
-        
-        # Variant and OLE operations (Windows)
-        'variant', 'olevariant', 'vartype', 'varclear', 'varcast',
-        'varastype', 'createoleobject', 'getactiveoleobject',
-        
-        # More networking
-        'gethostname', 'getdomainname', 'sethostname', 'setdomainname',
-        'getprotobyname', 'getprotobynumber', 'htons', 'htonl', 'ntohs', 'ntohl',
-        
-        # More Windows services
-        'startservice', 'stopservice', 'controlservice', 'queryservice',
-        'installservice', 'deleteservice', 'openservice', 'closeservice',
-        
-        # Timing attacks and benchmarking
-        'gettickcount', 'timegettime', 'queryperformancecounter',
-        'queryperformancefrequency', 'rdtsc',
-        
-        # Additional units that should be blocked
-        'registry', 'shellapi', 'comobj', 'inifiles',
-        'fileutil', 'lazfileutils', 'lclintf', 'forms', 'dialogs',
-        'masks', 'rtti'
+        # Port access (prevent hardware port manipulation)
+        'port', 'portb', 'portw', 'portl', 'inportb', 'outportb', 'inport', 'outport',
+
+        # Shell commands and utilities (prevent command execution)
+        'curl', 'wget', 'id', 'echo', 'cat', 'ls', 'rm', 'touch', 'chmod', 'chown',
+        'mv', 'cp', 'find', 'grep', 'awk', 'sed', 'tar', 'zip', 'unzip',
+
+        # Units that could compromise security
+        'dos', 'dynlibs', 'unix', 'baseunix', 'unixutil', 'windows', 'fileutil',
+        'lazfileutils', 'shellapi', 'registry', 'sysutils', 'typinfo', 'variants',
+        'printer', 'ports', 'video', 'WinDirs', 'WinCRT', 'ipc', 'go32', 'crt'
     ]
     
     if any(keyword in code.lower() for keyword in dangerous_keywords):
         # Prevent execution of potentially dangerous system calls
         return jsonify({'error': 'Code contains restricted keywords.'}), 400
+
+    # Critical security checks for advanced exploits
+    if any(pattern in code.lower() for pattern in [
+        # Direct system call exploits
+        'syscall', 'cdecl', 'external', 'name', 'nativeuint', 'pchar',
+        # Assembly and low-level operations
+        'asm', 'inline', '@', 'absolute',
+        # External linking and library calls
+        'external', 'cdecl', 'stdcall', 'pascal', 'safecall',
+        # Pointer operations and memory manipulation
+        'pointer', 'ptr', 'addr', '^', '@',
+        # System-level constants and types
+        'nativeuint', 'nativeint', 'ptruint', 'ptrint',
+        # File handles and descriptors
+        'thandle', 'handle', 'hfile',
+        # Command execution patterns
+        '/bin/', '/usr/', '/etc/', 'sh', 'bash', 'cmd',
+        # Compiler directives that could be dangerous
+        '{$', '(*$', 'include', 'link',
+    ]):
+        return jsonify({'error': 'Code contains advanced exploit patterns.'}), 400
+
+    # Advanced pattern detection using regex for more sophisticated exploits
+    suspicious_patterns = [
+        r'external\s+[\'"][^\'\"]*[\'"]',  # External library declarations
+        r'syscall\s*\(',                   # Direct system calls
+        r'{.*\$.*}',                       # Compiler directives
+        r'asm\s+.*end',                    # Assembly blocks
+        r'@[a-zA-Z_][a-zA-Z0-9_]*',       # Address operators
+        r'\^[a-zA-Z_][a-zA-Z0-9_]*',      # Pointer dereference
+        r'/bin/|/usr/|/etc/',              # Unix system paths
+        r'sh\s*\-c',                       # Shell command execution
+    ]
+    
+    for pattern in suspicious_patterns:
+        if re.search(pattern, code, re.IGNORECASE | re.MULTILINE):
+            return jsonify({'error': 'Code contains sophisticated exploit patterns.'}), 400
 
     # Compile and run the Pascal code using our FPC runner module
     output = compile_and_run(code, args, user_input)
