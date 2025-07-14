@@ -207,8 +207,6 @@ def run_code():
         'thandle', 'handle', 'hfile',
         # Command execution patterns
         '/bin/', '/usr/', '/etc/', 'sh', 'bash', 'cmd',
-        # Compiler directives that could be dangerous
-        '{$', '(*$', 'include', 'link',
     ]):
         return jsonify({'error': 'Code contains advanced exploit patterns.'}), 400
 
@@ -216,10 +214,9 @@ def run_code():
     suspicious_patterns = [
         r'external\s+[\'"][^\'\"]*[\'"]',  # External library declarations
         r'syscall\s*\(',                   # Direct system calls
-        r'{.*\$.*}',                       # Compiler directives
         r'asm\s+.*end',                    # Assembly blocks
-        r'@[a-zA-Z_][a-zA-Z0-9_]*',       # Address operators
-        r'\^[a-zA-Z_][a-zA-Z0-9_]*',      # Pointer dereference
+        r'@[a-zA-Z_][a-zA-Z0-9_]*',        # Address operators
+        r'\^[a-zA-Z_][a-zA-Z0-9_]*',       # Pointer dereference
         r'/bin/|/usr/|/etc/',              # Unix system paths
         r'sh\s*\-c',                       # Shell command execution
     ]

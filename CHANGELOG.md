@@ -6,52 +6,32 @@
 ### Critical Security Fixes
 
 - **System Call Exploit Prevention**: Fixed critical vulnerability where attackers could execute arbitrary system commands using direct syscall invocations with external library declarations.
-- **Advanced Pattern Detection**: Added comprehensive regex-based detection for sophisticated exploits including:
-  - External library declarations (`external 'c' name 'syscall'`)
-  - Direct system calls and low-level operations
-  - Assembly code blocks and inline assembly
-  - Pointer operations and memory manipulation
-  - Unix system paths and shell command patterns
-  - Compiler directives that could bypass security
 
-### Enhanced Security Measures
+### Better Security Architecture
 
 - **Multi-layered Input Validation**:
+  - Regex-based pattern detection for sophisticated exploits
   - Pre-compilation code validation to reject dangerous patterns
-  - Character encoding validation to prevent encoding attacks
-  - Code complexity limits to prevent resource exhaustion
-  - Enhanced keyword filtering with expanded dangerous operations list
+  - Character encoding and code complexity validation
+  - Expanded keyword filtering for dangerous operations
 
-- **Compilation Security**:
-  - Added strict FPC compiler flags (`-Xs-`, `-CX`, `-XX`, `-Sa`, `-Sc`, `-Se`)
-  - Restricted compilation environment with limited PATH
-  - Compilation timeout to prevent hanging builds
-  - Isolated temporary directories for each compilation
-
-- **Runtime Protection**:
+- **Compilation & Runtime Hardening**:
+  - Strict FPC compiler flags (`-Xs-`, `-CX`, `-XX`, `-Sa`, `-Sc`, `-Se`)
   - Enhanced resource limits (CPU, memory, processes, file descriptors)
-  - Completely isolated execution environment
-  - Disabled shell access (`SHELL=/bin/false`)
-  - Prevented core dumps and external command execution
-  - Strict environment variable control
+  - Completely isolated execution environment with minimal PATH
+  - Disabled shell access and prevented core dumps
 
-- **Web Security Headers**:
-  - Added Content Security Policy (CSP)
-  - X-Content-Type-Options: nosniff
-  - X-Frame-Options: DENY
-  - X-XSS-Protection headers
+- **Container Security**:
+  - Removed network tools (`curl`, `wget`, `netcat`, `telnet`, `ssh`)
+  - Removed system utilities (`cat`, `vim`, `nano`, `git`)
+  - Replaced `/bin/sh` with `/bin/false`
+  - Running as non-root user (`fpcuser`)
 
-- **Docker Container Hardening**:
-  - Explicitly removed network tools (`curl`, `wget`, `netcat`, `telnet`, `ssh`)
-  - Removed system utilities (`cat`, `more`, `less`, `vim`, `nano`, `git`)
-  - Disabled shell access by replacing `/bin/sh` with `/bin/false`
-  - Running as non-root user (`fpcuser`) for enhanced security
-  - Minimal attack surface with only essential binaries remaining
+- **Web Security**: Added CSP, X-Content-Type-Options, X-Frame-Options, X-XSS-Protection headers
 
-### Security Keywords Expanded
+### Detection Improvements
 
-- **Added detection for**: `syscall`, `cdecl`, `external`, `nativeuint`, `pchar`, pointer operations, assembly blocks, Unix paths, shell commands, and compiler directives
-- **Enhanced filtering**: Now blocks sophisticated attacks using external library calls and direct system calls
+- **Blocked patterns**: `syscall`, `cdecl`, `external`, `nativeuint`, `pchar`, assembly blocks, Unix paths, shell commands, compiler directives
 
 
 ## [0.2.0] - 2025-07-14
