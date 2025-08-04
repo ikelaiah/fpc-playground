@@ -57,14 +57,12 @@ Give it a try here: [FPC Playground](https://fpc-playground-app-mgeib.ondigitalo
 - **Program arguments support** - Pass command line arguments to your Pascal programs
 - **User input support** - Handle `ReadLn()` statements with dedicated input fields
 - **Example programs** to get started quickly
-- **Error detection** for common Pascal syntax mistakes
 - **Security filtering** to prevent dangerous operations
 - **Educational-friendly interface** with clear separation of code, input, and output
 
 ## 🔒 Security Features
 
 - **Smart Keyword Detection**: Advanced pattern matching prevents dangerous operations while allowing legitimate code
-- **False Positive Prevention**: Names like "Asher" and "Ashley" work perfectly - no more frustrating blocks!
 - **Multi-layered Validation**: Character encoding, complexity checks, and comprehensive threat detection
 - **Word Boundary Matching**: Uses regex word boundaries (`\b`) for precise keyword detection
 - **Context-Aware Shell Detection**: Shell commands only blocked in dangerous contexts (e.g., `sh -c`, `/bin/sh`)
