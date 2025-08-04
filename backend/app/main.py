@@ -180,7 +180,7 @@ def validate_security_patterns(code: str):
         regex_pattern = r'\b' + re.escape(pattern) + r'\b'
         if re.search(regex_pattern, code_lower, re.IGNORECASE):
             return False, create_error_response(f'Code contains exploit pattern: {pattern}')
-    
+
     for pattern in sh_dangerous_patterns:
         if re.search(pattern, code_lower, re.IGNORECASE):
             return False, create_error_response('Code contains shell execution pattern')
