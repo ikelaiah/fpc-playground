@@ -8,7 +8,14 @@
 ![Web](https://img.shields.io/badge/Web-HTML%2FCSS%2FJS-E34F26?logo=html5)
 ![Supports Windows](https://img.shields.io/badge/support-Windows-F59E0B?logo=Windows)
 ![Supports Linux](https://img.shields.io/badge/support-Linux-F59E0B?logo=Linux)
-[![Version](https://img.shields.io/badge/version-0.2.1-8B5CF6.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.0-8B5CF6.svg)](CHANGELOG.md)
+
+
+<p align="center">
+  <a href="https://fpc-playground-app-mgeib.ondigitalocean.app/">
+    <img src="assets/250804-logo-v1-256.png" width="320" />
+  </a>
+</p>
 
 
 A simple way to run Free Pascal programs in the browser so new developers can learn the language without having to install anything.
@@ -16,9 +23,9 @@ A simple way to run Free Pascal programs in the browser so new developers can le
 Give it a try here: [FPC Playground](https://fpc-playground-app-mgeib.ondigitalocean.app/)
 
 > [!WARNING]
-> Not production ready yet. This project is still a work in progress and will not support all Free Pascal features.
+> This project is still a work in progress and will not support all Free Pascal features.
 
-![FPC Playground Screenshot](assets/2025-07-14-0832-screenshot_00.png)
+![FPC Playground Screenshot](assets/2025-08-04-screenshot.png)
 
 ## Table of Contents
 - [🚀 FPC Playground](#-fpc-playground)
@@ -50,9 +57,16 @@ Give it a try here: [FPC Playground](https://fpc-playground-app-mgeib.ondigitalo
 - **Program arguments support** - Pass command line arguments to your Pascal programs
 - **User input support** - Handle `ReadLn()` statements with dedicated input fields
 - **Example programs** to get started quickly
-- **Error detection** for common Pascal syntax mistakes
 - **Security filtering** to prevent dangerous operations
 - **Educational-friendly interface** with clear separation of code, input, and output
+
+## 🔒 Security Features
+
+- **Smart Keyword Detection**: Advanced pattern matching prevents dangerous operations while allowing legitimate code
+- **Multi-layered Validation**: Character encoding, complexity checks, and comprehensive threat detection
+- **Word Boundary Matching**: Uses regex word boundaries (`\b`) for precise keyword detection
+- **Context-Aware Shell Detection**: Shell commands only blocked in dangerous contexts (e.g., `sh -c`, `/bin/sh`)
+- **Educational Focus**: Secure enough for learning environments, flexible enough for creativity
 
 ## ✋ Prerequisites
 
@@ -187,12 +201,49 @@ docker run -p 5000:5000 fpc-playground-backend
 
 ### Test a simple "Hello, World!" program
 
+**Note**: The API requires base64 encoded Pascal code, arguments, and input.
+
 ```bash
-cat > test.json << 'EOF'
-{"code": "program HelloWorld; begin writeln('Hello, World!'); end."}
-EOF
+# Create test payload with base64 encoded Pascal code
+echo '{"code":"'$(echo "program HelloWorld; begin writeln('Hello, World!'); end." | base64 -w 0)'","args":"","input":""}' > test.json
 curl -X POST http://localhost:5000/run -H "Content-Type: application/json" -d @test.json
 ```
+
+**Alternative method using a helper script:**
+```bash
+# Create a simple test script
+cat > test_api.sh << 'EOF'
+#!/bin/bash
+CODE="program HelloWorld; begin writeln('Hello, World!'); end."
+ENCODED_CODE=$(echo -n "$CODE" | base64 -w 0)
+echo '{"code":"'$ENCODED_CODE'","args":"","input":""}' | curl -X POST http://localhost:5000/run -H "Content-Type: application/json" -d @-
+EOF
+chmod +x test_api.sh
+./test_api.sh
+```
+
+## ⚠️ Current Limitations
+
+- **Code size**: Maximum 16KB per program
+- **Output size**: Limited to 48KB to prevent abuse
+- **Rate limiting**: 150 requests per hour, 10 per minute
+- **Pascal features**: Not all Free Pascal features supported (work in progress)
+- **Complex structures**: Limited nested structures (max 20 `begin` statements, 100 parentheses, 50 brackets)
+- **Character encoding**: Only standard ASCII characters (32-126) plus newlines, carriage returns, and tabs
+
+## 🔧 Troubleshooting
+
+### Common Issues
+- **"Code contains restricted keyword"**: Check for Pascal reserved words in variable names or use different names
+- **"Code structure too complex"**: Simplify nested structures or break code into smaller functions
+- **Connection refused**: Ensure Docker containers are running on correct ports (8080 for frontend, 5000 for backend)
+- **Compilation errors**: Verify Pascal syntax - the playground uses Free Pascal 3.2.2+
+- **"Code contains invalid characters"**: Use only standard ASCII characters in your code
+
+### Getting Help
+- Check our [Issues page](https://github.com/ikelaiah/fpc-playground/issues) for known problems
+- Join the [Free Pascal Discord](https://discord.com/channels/570025060312547359/570091337173696513) for community support
+- Review the [CHANGELOG.md](CHANGELOG.md) for recent updates and fixes
 
 ## 🙌 Contributing
 We welcome contributions! To contribute:
