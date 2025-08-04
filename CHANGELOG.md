@@ -1,6 +1,44 @@
 # CHANGELOG
 
 
+## [0.3.0] - 2025-08-04
+
+### Security Improvements
+
+- **Fixed False Positive Detection**: Resolved critical issue where legitimate names and words were incorrectly flagged as security threats
+  - Names like "Asher" and "Ashley" no longer trigger shell command detection
+  - Variable names containing "erase" (like "Laser") no longer trigger file operation blocks
+  - Improved user experience while maintaining security
+
+- **Enhanced Keyword Detection System**:
+  - **Word Boundary Matching**: Replaced simple substring matching with regex word boundaries (`\b`) for precise keyword detection
+  - **Context-Aware Shell Detection**: Shell commands (`sh`, `bash`, `cmd`) now only blocked in dangerous contexts:
+    - `sh -c` command execution patterns
+    - Shell path references like `/bin/sh`
+    - Function call patterns like `sh()`
+    - Command separator patterns
+  - **Improved Error Messages**: Now shows exactly which keyword or pattern triggered the security block
+
+- **Categorized Security Patterns**:
+  - **Regular Identifiers**: Use word boundary matching (e.g., `syscall`, `pointer`)
+  - **Path Patterns**: Maintain substring matching for system paths (e.g., `/bin/`, `/usr/`)
+  - **Special Characters**: Direct character matching for operators (e.g., `@`, `^`)
+  - **Shell Commands**: Context-sensitive detection to prevent false positives
+
+### Technical Changes
+
+- Refactored security validation logic for better maintainability
+- Separated different pattern types for appropriate handling
+- Enhanced regex patterns for more precise threat detection
+- Improved code organization in security validation functions
+
+### Bug Fixes
+
+- Fixed substring matching causing legitimate code to be blocked
+- Resolved shell command detection interfering with common names
+- Improved pattern matching accuracy
+
+
 ## [0.2.1] - 2025-07-14
 
 ### Critical Security Fixes

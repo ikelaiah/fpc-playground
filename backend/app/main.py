@@ -187,28 +187,74 @@ def run_code():
         'printer', 'ports', 'video', 'WinDirs', 'WinCRT', 'ipc', 'go32', 'crt'
     ]
     
-    if any(keyword in code.lower() for keyword in dangerous_keywords):
-        # Prevent execution of potentially dangerous system calls
-        return jsonify({'error': 'Code contains restricted keywords.'}), 400
+    # Check for dangerous keywords using word boundaries to prevent false positives
+    code_lower = code.lower()
+    for keyword in dangerous_keywords:
+        # Use regex with word boundaries to match only complete identifiers
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        if re.search(pattern, code_lower, re.IGNORECASE):
+            return jsonify({'error': f'Code contains restricted keyword: {keyword}'}), 400
 
     # Critical security checks for advanced exploits
-    if any(pattern in code.lower() for pattern in [
+    exploit_patterns = [
         # Direct system call exploits
         'syscall', 'cdecl', 'nativeuint', 'pchar',
         # Assembly and low-level operations
-        'asm', 'inline', '@', 'absolute',
+        'asm', 'inline', 'absolute',
         # External linking and library calls
-        'cdecl', 'stdcall', 'safecall',
+        'stdcall', 'safecall',
         # Pointer operations and memory manipulation
-        'pointer', 'ptr', 'addr', '^', '@',
+        'pointer', 'ptr', 'addr',
         # System-level constants and types
-        'nativeuint', 'ptruint', 'ptrint',
+        'ptruint', 'ptrint',
         # File handles and descriptors
         'thandle', 'hfile',
-        # Command execution patterns
-        '/bin/', '/usr/', '/etc/', 'sh', 'bash', 'cmd',
-    ]):
-        return jsonify({'error': 'Code contains exploit patterns.'}), 400
+    ]
+    
+    # Path patterns that use substring matching
+    path_patterns = ['/bin/', '/usr/', '/etc/']
+    
+    # Shell commands that need word boundary matching
+    shell_commands = ['bash', 'cmd']
+    
+    # Special patterns that need exact character matching (not word boundaries)
+    special_chars = ['@', '^']
+    
+    # Check regular exploit patterns with word boundaries
+    for pattern in exploit_patterns:
+        regex_pattern = r'\b' + re.escape(pattern) + r'\b'
+        if re.search(regex_pattern, code_lower, re.IGNORECASE):
+            return jsonify({'error': f'Code contains exploit pattern: {pattern}'}), 400
+    
+    # Check path patterns with substring matching
+    for pattern in path_patterns:
+        if pattern in code_lower:
+            return jsonify({'error': f'Code contains exploit pattern: {pattern}'}), 400
+    
+    # Check shell commands with word boundaries to avoid false positives
+    for pattern in shell_commands:
+        regex_pattern = r'\b' + re.escape(pattern) + r'\b'
+        if re.search(regex_pattern, code_lower, re.IGNORECASE):
+            return jsonify({'error': f'Code contains exploit pattern: {pattern}'}), 400
+    
+    # Special check for 'sh' - only block if it appears as a standalone command or with specific patterns
+    sh_dangerous_patterns = [
+        r'\bsh\s+\-c',  # sh -c command
+        r'\bsh\s+["\']',  # sh "command" or sh 'command'
+        r'/bin/sh',  # path to sh
+        r'\bsh\s*\(',  # sh() function call
+        r'\bsh\s*;',  # sh; (command separator)
+        r'\bsh\s*$',  # sh at end of line
+    ]
+    
+    for pattern in sh_dangerous_patterns:
+        if re.search(pattern, code_lower, re.IGNORECASE):
+            return jsonify({'error': 'Code contains shell execution pattern'}), 400
+    
+    # Check for special characters that could be dangerous
+    for char in special_chars:
+        if char in code:
+            return jsonify({'error': f'Code contains restricted character: {char}'}), 400
 
     # Advanced pattern detection using regex for more sophisticated exploits
     suspicious_patterns = [
