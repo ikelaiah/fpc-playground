@@ -94,12 +94,9 @@ function initializePlayground() {
     const exampleBtns = document.querySelectorAll('.example-code');
 
     // Example button clicks
-    console.log('Found example buttons:', exampleBtns.length);
     exampleBtns.forEach(btn => {
-        console.log('Adding click listener to:', btn.id, 'with data-example:', btn.dataset.example);
         btn.addEventListener('click', () => {
             const exampleIndex = parseInt(btn.dataset.example);
-            console.log('Example button clicked:', exampleIndex);
             loadExample(exampleIndex);
         });
     });
@@ -114,7 +111,6 @@ function initializePlayground() {
     fixQuotesBtn.addEventListener('click', fixQuotes);
 
     function loadExample(index) {
-        console.log('Loading example:', index, 'Total examples:', examples.length);
         if (index >= 0 && index < examples.length) {
             editor.setValue(examples[index], -1); // -1 moves cursor to start
             output.textContent = 'Loaded example: ' + examples[index].split('\n')[0].replace('program', '');
@@ -145,7 +141,6 @@ function initializePlayground() {
       ? `${window.location.protocol}//${window.location.hostname}/fpc-playground-backend`
       : 'http://localhost:5000';
 
-    console.log('Using backend URL:', backendUrl);
 
     async function runCode() {
 
@@ -157,6 +152,20 @@ function initializePlayground() {
         // Fail early if no code is provided
         if (!code) {
             output.textContent = 'Please enter some Pascal code to run.';
+            return;
+        }
+
+        // Validate sizes client-side to give immediate feedback (mirrors backend limits)
+        if (code.length > 16 * 1024) {
+            output.textContent = `❌ Code exceeds the 16 KB limit (${code.length} characters).`;
+            return;
+        }
+        if (programArgs.length > 64) {
+            output.textContent = `❌ Program arguments exceed the 64 character limit.`;
+            return;
+        }
+        if (userInput.length > 64) {
+            output.textContent = `❌ User input exceeds the 64 character limit.`;
             return;
         }
 

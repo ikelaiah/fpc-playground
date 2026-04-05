@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## [0.4.0] - 2026-04-05
+
+### Bug Fixes
+
+- **Fixed misplaced `print` statement in `/health` endpoint**: The debug print was placed before the docstring, making the docstring unreachable. Removed the redundant print and the surrounding debug comment.
+- **Fixed quoted program argument parsing**: Arguments like `"hello world"` were split incorrectly on whitespace. Now uses `shlex.split()` so quoted arguments are treated as a single token.
+
+### Security
+
+- **Extended character encoding validation to `args` and `user_input`**: Previously only the Pascal code field was checked for invalid characters. Both program arguments and user input are now validated with the same encoding rules.
+
+### Code Quality
+
+- **Renamed camelCase variables to snake_case in `main.py`**: `encodedCode`, `encodedArgs`, `encodedInput` renamed to `encoded_code`, `encoded_args`, `encoded_input` to follow Python conventions.
+- **Fixed bare `except:` clause in `fpc_runner.py`**: Replaced with `except Exception:` to avoid accidentally catching `SystemExit` and `KeyboardInterrupt`.
+- **Clarified `CPU_TIME_LIMIT` vs `TIMEOUT_LIMIT` constants**: Added comments explaining that `CPU_TIME_LIMIT` is the OS-level CPU-time limit (Linux only, via `RLIMIT_CPU`) and `TIMEOUT_LIMIT` is the wall-clock safety net used by `subprocess.run()`.
+
+### Frontend
+
+- **Added client-side input size validation**: Code, program arguments, and user input are now checked against the backend limits (16 KB, 64 chars, 64 chars) before the request is sent, giving immediate feedback instead of waiting for a round-trip.
+- **Removed debug `console.log` statements**: Cleaned up logging left over from development.
+
+### Maintenance
+
+- **Removed hosted demo**: The DigitalOcean deployment has been discontinued. The README now directs users to run the playground locally with Docker.
+
+
 ## [0.3.0] - 2025-08-04
 
 ### Security Improvements

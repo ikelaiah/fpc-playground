@@ -1,11 +1,17 @@
 import subprocess
 import tempfile
 import os
+import shlex
 
 # Constants for resource limits
-CPU_TIME_LIMIT = 10          # seconds
-RAM_LIMIT = 64 * 1024 * 1024 # MB
-TIMEOUT_LIMIT = 20           # seconds
+# CPU_TIME_LIMIT: enforced by the OS via RLIMIT_CPU (Linux only); kills the process
+#   when it exceeds this many CPU seconds, regardless of wall-clock time.
+# TIMEOUT_LIMIT: wall-clock timeout passed to subprocess.run(); acts as the safety
+#   net on Windows (where RLIMIT_CPU is unavailable) and as a backstop on Linux for
+#   programs that block on I/O without consuming CPU.
+CPU_TIME_LIMIT = 10           # seconds of CPU time (Linux only)
+RAM_LIMIT = 64 * 1024 * 1024  # bytes (64 MB)
+TIMEOUT_LIMIT = 20            # seconds of wall-clock time
 
 def _limit_resources():
     """
@@ -33,7 +39,7 @@ def _limit_resources():
         
         # Disable core dumps
         resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
-    except:
+    except Exception:
         pass  # Some limits might not be available on all systems
 
 
@@ -86,8 +92,8 @@ def compile_and_run(source_code: str, program_args:str = '', user_input: str = '
             # Pass the program arguments if provided
             cmd = [exe_path]
             if program_args.strip():
-                # Split the program arguments by spaces
-                cmd.extend(program_args.split())
+                # Use shlex.split to correctly handle quoted arguments (e.g. "hello world")
+                cmd.extend(shlex.split(program_args))
 
             # Step 5: Prepare input for the program
             stdin_input = None

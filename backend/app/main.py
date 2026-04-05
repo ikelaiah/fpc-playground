@@ -216,13 +216,11 @@ def root():
     return jsonify({'message': 'FPC Playground Backend is running!'}), 200
 
 
-# Debugging log for /health endpoint
 @app.route('/health', methods=['GET'])
 def health():
-    print("/health endpoint accessed", flush=True)
     """
     Health endpoint to check if the server is running.
-    
+
     Returns a simple JSON response indicating server status.
     """
     return jsonify({'status': 'ok'}), 200
@@ -268,23 +266,31 @@ def run_code():
     # Check if the request body can be parsed as JSON
     try:
         json_data = request.get_json(force=True)
-        encodedCode = json_data.get('code', '')
-        encodedArgs = json_data.get('args', '')
-        encodedInput = json_data.get('input', '')
+        encoded_code = json_data.get('code', '')
+        encoded_args = json_data.get('args', '')
+        encoded_input = json_data.get('input', '')
     except Exception:
         return jsonify({'error': 'Invalid JSON'}), 400
 
-    code = base64.b64decode(encodedCode).decode('utf-8')
-    args = base64.b64decode(encodedArgs).decode('utf-8')
-    user_input = base64.b64decode(encodedInput).decode('utf-8')
+    code = base64.b64decode(encoded_code).decode('utf-8')
+    args = base64.b64decode(encoded_args).decode('utf-8')
+    user_input = base64.b64decode(encoded_input).decode('utf-8')
 
     # Validate input sizes
     is_valid, error_response = validate_input_sizes(code, args, user_input)
     if not is_valid:
         return error_response
 
-    # Validate character encoding
+    # Validate character encoding for code, args, and user input
     is_valid, error_response = validate_character_encoding(code)
+    if not is_valid:
+        return error_response
+
+    is_valid, error_response = validate_character_encoding(args)
+    if not is_valid:
+        return error_response
+
+    is_valid, error_response = validate_character_encoding(user_input)
     if not is_valid:
         return error_response
 
