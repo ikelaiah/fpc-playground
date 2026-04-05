@@ -12,15 +12,14 @@
 
 
 <p align="center">
-  <a href="https://fpc-playground-app-mgeib.ondigitalocean.app/">
-    <img src="assets/250804-logo-v1-256.png" width="320" />
-  </a>
+  <img src="assets/250804-logo-v1-256.png" width="320" />
 </p>
 
 
 A simple way to run Free Pascal programs in the browser so new developers can learn the language without having to install anything.
 
-Give it a try here: [FPC Playground](https://fpc-playground-app-mgeib.ondigitalocean.app/)
+> [!NOTE]
+> The hosted demo is no longer available. Please run the playground locally using Docker — see [Quick Start](#-quick-start) below.
 
 > [!WARNING]
 > This project is still a work in progress and will not support all Free Pascal features.
